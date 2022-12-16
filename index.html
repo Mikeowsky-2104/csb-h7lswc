@@ -8,6 +8,15 @@
     <title>Chat Box</title>
   </head>
   <body>
+    <p>Patch Notes v2.2:</p>
+    <p>
+-----------------------------------------<br>
+- Server conectivity restored <br>
+- Username function fixed <br>
+- Style code changed <br>
+- Text changed to Input/Output <br>
+    </p>
+
       <h3>Input</h3>
       <div>
         <input name="username" id="username" placeholder="username" />
@@ -19,6 +28,7 @@
       
       <script src=https://cdn.pubnub.com/sdk/javascript/pubnub.4.28.2.min.js></script>
       <script> 
+     
      (function() {
   // Get input elements
   var usernameInput = document.getElementsByName("username")[0];
@@ -40,6 +50,9 @@
         (obj.message.username + ": " + obj.message.text).replace(/[<>]/g, "") +
         "<br>" +
         box.innerHTML;
+
+      // Display notification
+      displayNotification(obj.message.username, obj.message.text);
     }
   });
   pubnub.subscribe({
@@ -64,7 +77,27 @@
       });
     }
   });
+
+  // Display notification function
+  function displayNotification(username, message) {
+    if (Notification.permission === "granted") {
+      // If notifications are enabled, show notification
+      var notification = new Notification(username, {
+        body: message
+      });
+    } else if (Notification.permission !== "denied") {
+      // If notifications are not enabled, ask for permission
+      Notification.requestPermission(function (permission) {
+        if (permission === "granted") {
+          var notification = new Notification(username, {
+            body: message
+          });
+        }
+      });
+    }
+  }
 })();
+
 
       </script>
 
