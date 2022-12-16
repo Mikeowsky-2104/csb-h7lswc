@@ -1,67 +1,72 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
-    <title>Chatbox</title>
-    <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <link rel="stylesheet" href="styles.css">
+    <title>Chat Box</title>
   </head>
   <body>
-    <div id="chatbox">
-      <div id="messages">
-        <!-- Chat messages will be displayed here -->
-      </div>
-      <form id="chat-form">
-        <input
-          type="text"
-          id="username-input"
-          placeholder="Enter your username..."
-        />
-        <input
-          type="text"
-          id="message-input"
-          placeholder="Type your message here..."
-        />
-        <button type="submit">Send</button>
-      </form>
+      <h3>Input</h3>
+      <div>
+        <input name="username" id="username" placeholder="username" />
+        <input id=input placeholder="message" /> 
     </div>
-    <script>
-      const chatForm = document.getElementById("chat-form");
-      const messageInput = document.getElementById("message-input");
-      const messages = document.getElementById("messages");
+      
+      <h3>Output</h3>
+      <div id=box></div>
+      
+      <script src=https://cdn.pubnub.com/sdk/javascript/pubnub.4.28.2.min.js></script>
+      <script> 
+     (function() {
+  // Get input elements
+  var usernameInput = document.getElementsByName("username")[0];
+  var input = document.getElementById("input");
+  var box = document.getElementById("box");
 
-      // Add a message to the chatbox
-      function addMessage(username, message) {
-        const messageElement = document.createElement("div");
-        messageElement.innerHTML = `<b>${username}:</b> ${message}`;
-        messages.appendChild(messageElement);
-      }
+  // Initialize PubNub client
+  var pubnub = new PubNub({
+    publishKey: "pub-c-c6b1cbe7-4a18-4499-85e1-a0005041f080",
+    subscribeKey: "sub-c-1be6cb80-cd69-11ec-b811-de5c934881d6"
+  });
 
-      // Save the username to local storage
-      function saveUsername(username) {
-        localStorage.setItem("username", username);
-      }
+  // Subscribe to channel
+  var channel = "10chat-demo";
+  pubnub.addListener({
+    message: function(obj) {
+      // Update chat output with new message
+      box.innerHTML =
+        (obj.message.username + ": " + obj.message.text).replace(/[<>]/g, "") +
+        "<br>" +
+        box.innerHTML;
+    }
+  });
+  pubnub.subscribe({
+    channels: [channel]
+  });
 
-      // Handle form submission
-      chatForm.addEventListener("submit", (event) => {
-        event.preventDefault();
+  // Handle chat input
+  input.addEventListener("keyup", function(e) {
+    if ((e.keyCode || e.charCode) === 13) {
+      // Get username and message
+      var username = usernameInput.value;
+      var message = input.value;
 
-        // Get the username and message from the input fields
-        let username = document.getElementById("username-input").value;
-        const message = messageInput.value;
-
-        // If the username is not empty, save it to local storage
-        if (username) {
-          saveUsername(username);
-        } else {
-          // If the username is empty, retrieve it from local storage
-          username = localStorage.getItem("username");
-        }
-
-        // Add the message to the chatbox
-        addMessage(username, message);
-
-        // Clear the message input field
-        messageInput.value = "";
+      // Publish message to channel
+      pubnub.publish({
+        channel: channel,
+        message: {
+          username: username,
+          text: message
+        },
+        x: (input.value = "")
       });
-    </script>
+    }
+  });
+})();
+
+      </script>
+
   </body>
 </html>
