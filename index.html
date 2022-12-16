@@ -9,13 +9,14 @@
     <title>Chat Box</title>
   </head>
   <body>
-    <p>Patch Notes v2.2:</p>
+    <p>Patch Notes v2.3:</p>
     <p>
 -----------------------------------------<br>
 - Server conectivity restored <br>
 - Username function fixed <br>
 - Style code changed <br>
 - Text changed to Input/Output <br>
+- Added time function <br>
     </p>
 
       <h3>Input</h3>
@@ -30,7 +31,7 @@
       <script src=https://cdn.pubnub.com/sdk/javascript/pubnub.4.28.2.min.js></script>
       <script> 
      
-     (function() {
+    (function() {
   // Get input elements
   var usernameInput = document.getElementsByName("username")[0];
   var input = document.getElementById("input");
@@ -46,9 +47,13 @@
   var channel = "10chat-demo";
   pubnub.addListener({
     message: function(obj) {
-      // Update chat output with new message
+      // Format timestamp
+      var timestamp = obj.message.timestamp;
+      var formattedTimestamp = timestamp.toLocaleString();
+
+      // Update chat output with new message and timestamp
       box.innerHTML =
-        (obj.message.username + ": " + obj.message.text).replace(/[<>]/g, "") +
+        (obj.message.username + ": " + obj.message.text + " [" + formattedTimestamp + "]").replace(/[<>]/g, "") +
         "<br>" +
         box.innerHTML;
 
@@ -63,16 +68,18 @@
   // Handle chat input
   input.addEventListener("keyup", function(e) {
     if ((e.keyCode || e.charCode) === 13) {
-      // Get username and message
+      // Get username, message, and timestamp
       var username = usernameInput.value;
       var message = input.value;
+      var timestamp = new Date();
 
       // Publish message to channel
       pubnub.publish({
         channel: channel,
         message: {
           username: username,
-          text: message
+          text: message,
+          timestamp: timestamp
         },
         x: (input.value = "")
       });
@@ -98,6 +105,7 @@
     }
   }
 })();
+
 
 
       </script>
